@@ -3,14 +3,6 @@ pipeline {
         docker { image 'cimg/android:2024.01.1-node' }
     }
 
-    environment {
-        // Define environment variables if needed
-        // JAVA_HOME = "${tool 'JDK17'}"
-        // GRADLE_HOME = "${tool 'Gradle'}"
-        // PATH = "${env.JAVA_HOME}/bin:${env.GRADLE_HOME}/bin:${env.PATH}"
-        ANDROID_HOME = "/home/circleci/android-sdk"
-    }
-
     stages {
         stage('Build Logic Check') {
             steps {
