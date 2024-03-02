@@ -8,5 +8,10 @@ pipeline {
         sh './gradlew check -p build-logic'
       }
     }
+    stage('Check spotless') {
+      steps {
+        sh './gradlew spotlessCheck --init-script gradle/init.gradle.kts --no-configuration-cache'
+      }
+    }
   }
 }
