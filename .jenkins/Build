@@ -43,9 +43,7 @@ pipeline {
         stage('Run Local Tests and Lint') {
             steps {
                 sh '''
-                    echo "ANDROID_HOME = $ANDROID_HOME"
-                    export ANDROID_HOME="${ANDROID_HOME}"
-                    echo "Using ANDROID_HOME at ${ANDROID_HOME}"
+                    echo "sdk.dir=$ANDROID_HOME" > local.properties
                     ./gradlew testDemoDebug :lint:test :app:lintProdRelease :app-nia-catalog:lintRelease :lint:lint
                    '''
             }
