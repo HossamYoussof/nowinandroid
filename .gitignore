@@ -43,3 +43,5 @@ _sandbox
 
 # Android Studio captures folder
 captures/
+/fastlane/README.md
+/fastlane/report.xml
