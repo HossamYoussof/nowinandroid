@@ -5,9 +5,10 @@ pipeline {
 
     environment {
         // Define environment variables if needed
-        JAVA_HOME = "${tool 'JDK17'}"
-        GRADLE_HOME = "${tool 'Gradle'}"
-        PATH = "${env.JAVA_HOME}/bin:${env.GRADLE_HOME}/bin:${env.PATH}"
+        // JAVA_HOME = "${tool 'JDK17'}"
+        // GRADLE_HOME = "${tool 'Gradle'}"
+        // PATH = "${env.JAVA_HOME}/bin:${env.GRADLE_HOME}/bin:${env.PATH}"
+        ANDROID_HOME = "/home/circleci/android-sdk"
     }
 
     stages {
