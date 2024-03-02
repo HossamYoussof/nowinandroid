@@ -5,7 +5,7 @@ pipeline {
   stages {
     stage('Copy CI gradle.properties') {
       steps {
-        sh 'mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties'
+        sh 'cp .github/ci-gradle.properties ~/.gradle/gradle.properties'
       }
     }
     stage('Check build-logic') {
