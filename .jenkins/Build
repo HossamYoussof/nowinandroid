@@ -13,5 +13,20 @@ pipeline {
         sh './gradlew spotlessCheck --init-script gradle/init.gradle.kts --no-configuration-cache'
       }
     }
+    stage('Run local tests') {
+      steps {
+        sh './gradlew testDemoDebug :lint:test'
+      }
+    }
+    stage('Build all build type and flavor permutations') {
+      steps {
+        sh './gradlew :app:assemble :benchmarks:assemble -x pixel6Api33ProdNonMinifiedReleaseAndroidTest -x pixel6Api33DemoNonMinifiedReleaseAndroidTest -x collectDemoNonMinifiedReleaseBaselineProfile -x collectProdNonMinifiedReleaseBaselineProfile'
+      }
+    }
+    stage('Check lint') {
+      steps {
+        sh './gradlew :app:lintProdRelease :app-nia-catalog:lintRelease :lint:lint'
+      }
+    }
   }
 }
