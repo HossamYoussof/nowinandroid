@@ -3,11 +3,6 @@ pipeline {
     docker { image 'cimg/android:2024.01.1' }
   }
   stages {
-    stage('Dependencies') {
-      steps {
-        sh './gradlew androidDependencies'
-      }
-    }
     stage('Run Tests') {
       steps {
         sh './gradlew lint test'
