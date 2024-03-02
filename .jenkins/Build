@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        docker { image 'cimg/android:2024.01.1' }
+        docker { image 'cimg/android:2024.01.1-node' }
     }
 
     environment {
@@ -42,7 +42,12 @@ pipeline {
 
         stage('Run Local Tests and Lint') {
             steps {
-                sh './gradlew testDemoDebug :lint:test :app:lintProdRelease :app-nia-catalog:lintRelease :lint:lint'
+                sh '''
+                    echo "ANDROID_HOME = $ANDROID_HOME"
+                    export ANDROID_HOME="${ANDROID_HOME}"
+                    echo "Using ANDROID_HOME at ${ANDROID_HOME}"
+                    ./gradlew testDemoDebug :lint:test :app:lintProdRelease :app-nia-catalog:lintRelease :lint:lint
+                   '''
             }
         }
 
