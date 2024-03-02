@@ -20,11 +20,7 @@ pipeline {
     }
     stage('Build all build type and flavor permutations') {
       steps {
-        sh './gradlew :app:assemble :benchmarks:assemble
-          -x pixel6Api33ProdNonMinifiedReleaseAndroidTest
-          -x pixel6Api33DemoNonMinifiedReleaseAndroidTest
-          -x collectDemoNonMinifiedReleaseBaselineProfile
-          -x collectProdNonMinifiedReleaseBaselineProfile'
+        sh './gradlew :app:assemble :benchmarks:assemble -x pixel6Api33ProdNonMinifiedReleaseAndroidTest -x pixel6Api33DemoNonMinifiedReleaseAndroidTest -x collectDemoNonMinifiedReleaseBaselineProfile -x collectProdNonMinifiedReleaseBaselineProfile'
       }
     }
     stage('Check lint') {
