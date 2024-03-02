@@ -3,6 +3,11 @@ pipeline {
     docker { image 'cimg/android:2024.01.1' }
   }
   stages {
+    stage('Copy CI gradle.properties') {
+      steps {
+        sh 'mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties'
+      }
+    }
     stage('Check build-logic') {
       steps {
         sh './gradlew check -p build-logic'
