@@ -1,32 +1,92 @@
 pipeline {
-  agent {
-    docker { image 'cimg/android:2024.01.1' }
-  }
-  stages {
-    stage('Check build-logic') {
-      steps {
-        sh './gradlew check -p build-logic'
-      }
+    agent {
+        docker { image 'cimg/android:2024.01.1' }
     }
-    stage('Check spotless') {
-      steps {
-        sh './gradlew spotlessCheck --init-script gradle/init.gradle.kts --no-configuration-cache'
-      }
+
+    environment {
+        // Define environment variables if needed
+        JAVA_HOME = "${tool 'JDK17'}"
+        GRADLE_HOME = "${tool 'Gradle'}"
+        PATH = "${env.JAVA_HOME}/bin:${env.GRADLE_HOME}/bin:${env.PATH}"
     }
-    stage('Run local tests') {
-      steps {
-        sh './gradlew testDemoDebug :lint:test'
-      }
+
+    stages {
+        stage('Preparation') {
+            steps {
+                // Equivalent to "actions/checkout@v4" in GitHub Actions
+                checkout scm
+                // Copy CI gradle.properties
+                sh 'mkdir -p ~/.gradle && cp .github/ci-gradle.properties ~/.gradle/gradle.properties'
+            }
+        }
+
+        stage('Validate Gradle Wrapper') {
+            steps {
+                // You may need a Jenkins plugin or a script for Gradle wrapper validation
+                sh './gradlew wrapper --gradle-version=YOUR_GRADLE_VERSION'
+            }
+        }
+
+        stage('Set up JDK 17') {
+            steps {
+                // JDK is set up globally in the environment section
+                echo 'Using JDK 17'
+            }
+        }
+
+        stage('Build Logic Check') {
+            steps {
+                sh './gradlew check -p build-logic'
+            }
+        }
+
+        stage('Spotless Check') {
+            steps {
+                sh './gradlew spotlessCheck --init-script gradle/init.gradle.kts --no-configuration-cache'
+            }
+        }
+
+        stage('Dependency Guard') {
+            steps {
+                // Jenkins does not have a direct equivalent to `continue-on-error`
+                // You may need to handle errors manually
+                sh '''
+                    set +e
+                    ./gradlew dependencyGuard
+                    RESULT=$?
+                    set -e
+                    if [ $RESULT -ne 0 ] && [ "$CHANGE_ID" != null ]; then
+                        ./gradlew dependencyGuardBaseline
+                    fi
+                '''
+            }
+        }
+
+        stage('Run Local Tests and Lint') {
+            steps {
+                sh './gradlew testDemoDebug :lint:test :app:lintProdRelease :app-nia-catalog:lintRelease :lint:lint'
+            }
+        }
+
+        stage('Build APK') {
+            steps {
+                sh './gradlew :app:assemble :benchmarks:assemble -x pixel6Api33ProdNonMinifiedReleaseAndroidTest -x pixel6Api33DemoNonMinifiedReleaseAndroidTest -x collectDemoNonMinifiedReleaseBaselineProfile -x collectProdNonMinifiedReleaseBaselineProfile'
+            }
+        }
+
+        stage('Upload Artifacts') {
+            steps {
+                archiveArtifacts artifacts: '**/build/outputs/apk/**/*.apk', fingerprint: true
+                archiveArtifacts artifacts: '**/build/test-results/test*UnitTest/**/*.xml', fingerprint: true
+                archiveArtifacts artifacts: '**/build/reports/lint-results-*.html', fingerprint: true
+            }
+        }
     }
-    stage('Build all build type and flavor permutations') {
-      steps {
-        sh './gradlew :app:assemble :benchmarks:assemble -x pixel6Api33ProdNonMinifiedReleaseAndroidTest -x pixel6Api33DemoNonMinifiedReleaseAndroidTest -x collectDemoNonMinifiedReleaseBaselineProfile -x collectProdNonMinifiedReleaseBaselineProfile'
-      }
+
+    post {
+        always {
+            // Clean up workspace after build
+            cleanWs()
+        }
     }
-    stage('Check lint') {
-      steps {
-        sh './gradlew :app:lintProdRelease :app-nia-catalog:lintRelease :lint:lint'
-      }
-    }
-  }
 }
