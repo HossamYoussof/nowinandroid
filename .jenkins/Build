@@ -1,6 +1,9 @@
 pipeline {
     agent {
-        docker { image 'cimg/android:2024.01.1-node' }
+        docker {
+            image 'cimg/android:2024.01.1-node'
+            args '-e ANDROID_HOME=/home/circleci/android-sdk'
+        }
     }
 
     stages {
