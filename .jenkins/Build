@@ -3,34 +3,14 @@ pipeline {
     docker { image 'cimg/android:2024.01.1' }
   }
   stages {
-    stage('Copy CI gradle.properties') {
+    stage('Dependencies') {
       steps {
-        sh 'cp .github/ci-gradle.properties ./local.properties'
+        sh './gradlew androidDependencies'
       }
     }
-    stage('Check build-logic') {
+    stage('Run Tests') {
       steps {
-        sh './gradlew check -p build-logic'
-      }
-    }
-    stage('Check spotless') {
-      steps {
-        sh './gradlew spotlessCheck --init-script gradle/init.gradle.kts --no-configuration-cache'
-      }
-    }
-    stage('Run local tests') {
-      steps {
-        sh './gradlew testDemoDebug :lint:test'
-      }
-    }
-    stage('Build all build type and flavor permutations') {
-      steps {
-        sh './gradlew :app:assemble :benchmarks:assemble -x pixel6Api33ProdNonMinifiedReleaseAndroidTest -x pixel6Api33DemoNonMinifiedReleaseAndroidTest -x collectDemoNonMinifiedReleaseBaselineProfile -x collectProdNonMinifiedReleaseBaselineProfile'
-      }
-    }
-    stage('Check lint') {
-      steps {
-        sh './gradlew :app:lintProdRelease :app-nia-catalog:lintRelease :lint:lint'
+        sh './gradlew lint test'
       }
     }
   }
