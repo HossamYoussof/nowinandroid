@@ -12,29 +12,6 @@ pipeline {
     }
 
     stages {
-        stage('Preparation') {
-            steps {
-                // Equivalent to "actions/checkout@v4" in GitHub Actions
-                checkout scm
-                // Copy CI gradle.properties
-                sh 'mkdir -p ~/.gradle && cp .github/ci-gradle.properties ~/.gradle/gradle.properties'
-            }
-        }
-
-        stage('Validate Gradle Wrapper') {
-            steps {
-                // You may need a Jenkins plugin or a script for Gradle wrapper validation
-                sh './gradlew wrapper --gradle-version=YOUR_GRADLE_VERSION'
-            }
-        }
-
-        stage('Set up JDK 17') {
-            steps {
-                // JDK is set up globally in the environment section
-                echo 'Using JDK 17'
-            }
-        }
-
         stage('Build Logic Check') {
             steps {
                 sh './gradlew check -p build-logic'
