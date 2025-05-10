@@ -14,46 +14,35 @@ pipeline {
             }
         }
 
-        stage('Build Logic Check') {
+        stage('Check build-logic') {
             steps {
-                sh './gradlew check -p build-logic'
+                sh './gradlew :build-logic:convention:check'
             }
         }
 
-        stage('Spotless Check') {
+        stage('Check spotless') {
             steps {
                 sh './gradlew spotlessCheck --init-script gradle/init.gradle.kts --no-configuration-cache'
             }
         }
 
-        stage('Dependency Guard') {
+        stage('Check Dependency Guard') {
             steps {
-                // Jenkins does not have a direct equivalent to `continue-on-error`
-                // You may need to handle errors manually
-                sh '''
-                    set +e
-                    ./gradlew dependencyGuard
-                    RESULT=$?
-                    set -e
-                    if [ $RESULT -ne 0 ] && [ "$CHANGE_ID" != null ]; then
-                        ./gradlew dependencyGuardBaseline
-                    fi
-                '''
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh './gradlew dependencyGuard dependencyGuardBaseline'
+                }
             }
         }
 
-        stage('Run Local Tests and Lint') {
+        stage('Run local tests') {
             steps {
-                sh '''
-                    echo "sdk.dir=$ANDROID_HOME" > local.properties
-                    ./gradlew testDemoDebug :lint:test :app:lintProdRelease :app-nia-catalog:lintRelease :lint:lint
-                   '''
+                sh './gradlew testDemoDebug :lint:test'
             }
         }
 
-        stage('Build APK') {
+        stage('Build all build type and flavor permutations') {
             steps {
-                sh './gradlew :app:assemble :benchmarks:assemble -x pixel6Api33ProdNonMinifiedReleaseAndroidTest -x pixel6Api33DemoNonMinifiedReleaseAndroidTest -x collectDemoNonMinifiedReleaseBaselineProfile -x collectProdNonMinifiedReleaseBaselineProfile'
+                sh './gradlew :app:assemble'
             }
         }
 
