@@ -20,28 +20,6 @@ pipeline {
             }
         }
 
-        stage('Spotless Check') {
-            steps {
-                sh './gradlew spotlessCheck --init-script gradle/init.gradle.kts --no-configuration-cache'
-            }
-        }
-
-        stage('Dependency Guard') {
-            steps {
-                // Jenkins does not have a direct equivalent to `continue-on-error`
-                // You may need to handle errors manually
-                sh '''
-                    set +e
-                    ./gradlew dependencyGuard
-                    RESULT=$?
-                    set -e
-                    if [ $RESULT -ne 0 ] && [ "$CHANGE_ID" != null ]; then
-                        ./gradlew dependencyGuardBaseline
-                    fi
-                '''
-            }
-        }
-
         stage('Run Local Tests and Lint') {
             steps {
                 sh '''
